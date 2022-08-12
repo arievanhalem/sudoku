@@ -1,0 +1,40 @@
+.row {
+  display: flex;
+}
+
+.cell {
+  position: relative;
+  width: 60px;
+  height: 60px;
+}
+
+.value {
+  position: absolute;
+  width: 60px;
+  line-height: 60px;
+  text-align: center;
+  font-size: 50px;
+  cursor: pointer;
+}
+
+.option {
+  width: 20px;
+  height: 20px;
+  line-height: 20px;
+  text-align: center;
+  cursor: pointer;
+  color: gray;
+}
+
+.option:hover {
+  background-color: lightgray;
+  color: black;
+}
+
+.option .hidden-option {
+  display: none;
+}
+
+.option:hover .hidden-option {
+  display: block;
+}

@@ -1,0 +1,20 @@
+<div *ngIf="_info" class="cell">
+  <div class="value" (click)="setvalue(_info.value)" *ngIf="_info.value">{{_info.value}}</div>
+  <div class="options" *ngIf="!_info.value">
+    <div class="row">
+      <div class="option" (click)="setvalue(1)" (contextmenu)="setoption(1, $event)"><div [ngClass]="{'hidden-option': !_options[1]}">1</div></div>
+      <div class="option" (click)="setvalue(2)" (contextmenu)="setoption(2, $event)"><div [ngClass]="{'hidden-option': !_options[2]}">2</div></div>
+      <div class="option" (click)="setvalue(3)" (contextmenu)="setoption(3, $event)"><div [ngClass]="{'hidden-option': !_options[3]}">3</div></div>
+    </div>
+    <div class="row">
+      <div class="option" (click)="setvalue(4)" (contextmenu)="setoption(4, $event)"><div [ngClass]="{'hidden-option': !_options[4]}">4</div></div>
+      <div class="option" (click)="setvalue(5)" (contextmenu)="setoption(5, $event)"><div [ngClass]="{'hidden-option': !_options[5]}">5</div></div>
+      <div class="option" (click)="setvalue(6)" (contextmenu)="setoption(6, $event)"><div [ngClass]="{'hidden-option': !_options[6]}">6</div></div>
+    </div>
+    <div class="row">
+      <div class="option" (click)="setvalue(7)" (contextmenu)="setoption(7, $event)"><div [ngClass]="{'hidden-option': !_options[7]}">7</div></div>
+      <div class="option" (click)="setvalue(8)" (contextmenu)="setoption(8, $event)"><div [ngClass]="{'hidden-option': !_options[8]}">8</div></div>
+      <div class="option" (click)="setvalue(9)" (contextmenu)="setoption(9, $event)"><div [ngClass]="{'hidden-option': !_options[9]}">9</div></div>
+    </div>
+  </div>
+</div>

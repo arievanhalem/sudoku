@@ -1,0 +1,24 @@
+.row {
+  display: flex;
+}
+
+.cell {
+  border-top: solid 1px;
+  border-left: solid 1px;
+}
+
+.cell.block-top {
+  border-top: solid 2px;
+}
+
+.cell.block-left {
+  border-left: solid 2px;
+}
+
+.cell.block-bottom {
+  border-bottom: solid 2px;
+}
+
+.cell.block-right {
+  border-right: solid 2px;
+}
