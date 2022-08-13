@@ -94,7 +94,6 @@ export class AppComponent implements OnInit, OnDestroy {
         if (solutions.length > 1) {
           console.log('Meer dan 1 oplossing')
           console.log(solutions)
-          return {}
         } else if (solutions.length === 0) {
           console.log('Geen oplossing')
           return {}
@@ -141,5 +140,19 @@ export class AppComponent implements OnInit, OnDestroy {
   setString() {
     const s = prompt('Type de string voor het bord')
     this.updateVm.next((_: viewState) => ({ board: sudoku.deserialize(s) }))
+  }
+
+  generate() {
+    this.updateVm.next((_: viewState) => ({ 
+      board: sudoku.generate(),
+      solution: undefined,
+      solution_string: undefined
+    }));
+  }
+
+  alloptions() {
+    this.updateVm.next((s: viewState) => ({
+      board: sudoku.getAllOptions(s.board)
+    }))
   }
 }

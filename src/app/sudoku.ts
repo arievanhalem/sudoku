@@ -40,35 +40,35 @@ const isValidInRow = (b: number[], row: number, value: number) =>
 const isValidInColumn = (b: number[], column: number, value: number) =>
   getColumnIndexes(column).reduce((a, i) => a && (b[i] !== value), true)
 
-const isValidInBlock = (b: number[], row: number, column: number, value: number) => 
+const isValidInBlock = (b: number[], row: number, column: number, value: number) =>
   getBlockIndexes(row, column).reduce((a, i) => a && (b[i] !== value), true)
 
 const isValidValue = (b: number[], row: number, column: number, value: number) =>
   (b.length === BOARDSIZE) && isValidInColumn(b, column, value) && isValidInRow(b, row, value) && isValidInBlock(b, row, column, value)
 
 const isValidOnIndex = (b: number[], idx: number, value: number) => {
-  const [r,c] = getRowColumnIndex(idx)
+  const [r, c] = getRowColumnIndex(idx)
   return isValidValue(b, r, c, value)
 }
 const stringify = (b: number[]) => {
-  if(b.length !== BOARDSIZE) {
+  if (b.length !== BOARDSIZE) {
     return range(BOARDSIZE).map(_ => '_').join('')
   }
   return b.map(c => c ? c.toString() : '_').join('')
 }
 
 const solve = (b: number[]): string[] => {
-  if(b.length !== BOARDSIZE) {
+  if (b.length !== BOARDSIZE) {
     return [] as string[]
   }
 
   const idx = b.findIndex(i => !i)
-  if(idx === -1) {
+  if (idx === -1) {
     return [stringify(b)]
   }
 
   return range(SIZE).reduce((ret, n) => {
-    if(isValidOnIndex(b, idx, n + 1)) {
+    if ((ret.length <= 20) && isValidOnIndex(b, idx, n + 1)) {
       const nwB = [].concat(b)
       nwB[idx] = n + 1
       return ret.concat(solve(nwB))
@@ -86,6 +86,11 @@ const getEmptyBoard = () => ({
       frozen: false
     }))
 } as board)
+
+const shuffle = (source: any[]) => source
+  .map(v => ({ v, sort: Math.random() }))
+  .sort((a, b) => a.sort - b.sort)
+  .map(({ v }) => v)
 
 // API //
 export const sudoku = {
@@ -112,13 +117,14 @@ export const sudoku = {
 
   setCellValue: (b: board, row: number, column: number, newValue: number) => {
     const i = getCellIndex(row, column);
-    const optidx = getRowIndexes(row).concat(getColumnIndexes(column)).concat(getBlockIndexes(row,column))
-    return { cells: b.cells
-      .map((oldCell, idx) => ({
-        value: idx === i ? newValue : oldCell.value,
-        options: optidx.includes(idx) ? oldCell.options.filter(o => o !== newValue) : oldCell.options,
-        frozen: oldCell.frozen
-      }))
+    const optidx = getRowIndexes(row).concat(getColumnIndexes(column)).concat(getBlockIndexes(row, column))
+    return {
+      cells: b.cells
+        .map((oldCell, idx) => ({
+          value: idx === i ? newValue : oldCell.value,
+          options: optidx.includes(idx) ? oldCell.options.filter(o => o !== newValue) : oldCell.options,
+          frozen: oldCell.frozen
+        }))
     }
   },
 
@@ -144,7 +150,47 @@ export const sudoku = {
 
   solve: (b: board): string[] => solve(b.cells.map(c => c.value)),
 
-  freeze: (b: board) => ({ cells: [].concat(b.cells)
-    .map(c => ({...c, frozen: (c.value ? true : false)}))
-  })
+  freeze: (b: board) => ({
+    cells: [].concat(b.cells)
+      .map(c => ({ ...c, frozen: (c.value ? true : false) }))
+  }),
+
+  generate: () => {
+    const numbers = range(SIZE)
+    const board = getEmptyBoard()
+    const b1 = shuffle(numbers)
+    const b2 = shuffle(numbers)
+    const b3 = shuffle(numbers)
+    range(BLOCKSIZE).forEach(i => {
+      range(BLOCKSIZE).forEach(j => {
+        const k = i * BLOCKSIZE + j
+        const ix1 = getCellIndex(i, j)
+        const ix2 = getCellIndex(i + BLOCKSIZE, j + BLOCKSIZE)
+        const ix3 = getCellIndex(i + BLOCKSIZE * 2, j + BLOCKSIZE * 2)
+        board.cells[ix1].value = b1[k] + 1
+        board.cells[ix2].value = b2[k] + 1
+        board.cells[ix3].value = b3[k] + 1
+      })
+    })
+
+    const solutions = solve(board.cells.map(c => c.value))
+    const solution = solutions[Math.floor(Math.random() * solutions.length)]
+    return {
+      cells: solution.split('').map(c => ({
+        value: c === '_' ? undefined : parseInt(c),
+        options: [],
+        frozen: false
+      }))
+    }
+  },
+
+  getAllOptions(board: board) {
+    const b = board.cells.map(c => c.value)
+    return {
+      cells: board.cells.map((c,i) => ({
+        ...c,
+        options: range(SIZE).reduce((o,v) => isValidOnIndex(b, i, v+1) ? o.concat(v+1) : o, [])
+      }))
+    }
+  }
 }
