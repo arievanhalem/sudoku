@@ -2,6 +2,14 @@
 export const BLOCKSIZE = 3
 export const SIZE = BLOCKSIZE * BLOCKSIZE
 export const BOARDSIZE = SIZE * SIZE
+export const DIFFICULTY = {
+  "easy":         62,
+  "medium":       53,
+  "hard":         44,
+  "very-hard":    35,
+  "insane":       26,
+  "inhuman":      17,
+};
 
 export type cell = {
   value: number;
@@ -92,6 +100,8 @@ const shuffle = (source: any[]) => source
   .sort((a, b) => a.sort - b.sort)
   .map(({ v }) => v)
 
+const getRandomElement = (source: any[]) => 
+source[Math.floor(Math.random() * source.length)]
 // API //
 export const sudoku = {
   serialize: (b: board) => stringify(b.cells.map(c => c.value)),
@@ -155,7 +165,7 @@ export const sudoku = {
       .map(c => ({ ...c, frozen: (c.value ? true : false) }))
   }),
 
-  generate: () => {
+  generate: (K: number) => {
     const numbers = range(SIZE)
     const board = getEmptyBoard()
     const b1 = shuffle(numbers)
@@ -174,10 +184,38 @@ export const sudoku = {
     })
 
     const solutions = solve(board.cells.map(c => c.value))
-    const solution = solutions[Math.floor(Math.random() * solutions.length)]
+    const solution =  getRandomElement(solutions)
+    var result = solution.split('').map(c => c === '_' ? undefined : parseInt(c))
+
+    var count = K
+    while (count > 0) {
+      var numSol = 0 
+      var maxTries = 10
+      while(numSol !== 1) {
+        const idx = getRandomElement(result.map((v,i) => v ? i : -1).filter(i => i !== -1))
+        const optie = [].concat(result)
+        optie[idx] = undefined
+        numSol = solve(optie).length
+        if(numSol === 1) {
+          result = optie
+        }
+        maxTries --
+        if(maxTries < 1) {
+          return {
+            cells: result.map(c => ({
+              value: c,
+              options: [],
+              frozen: false
+            }))
+          }
+        }
+      }
+      count--
+    }
+
     return {
-      cells: solution.split('').map(c => ({
-        value: c === '_' ? undefined : parseInt(c),
+      cells: result.map(c => ({
+        value: c,
         options: [],
         frozen: false
       }))

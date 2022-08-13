@@ -143,10 +143,22 @@ export class AppComponent implements OnInit, OnDestroy {
   }
 
   generate() {
+    var board = sudoku.generate(50)
+    const solutions = sudoku.solve(board)
+    var solution: cell[][] = undefined
+    var solution_string: string = undefined
+    if(solutions.length === 0) {
+      board = sudoku.getEmptyBoard()
+    } else {
+      solution_string = solutions[0]
+      solution = sudoku.getDisplayBoard(sudoku.deserialize(solutions[0]))
+      board = sudoku.freeze(board)
+    }
+
     this.updateVm.next((_: viewState) => ({ 
-      board: sudoku.generate(),
-      solution: undefined,
-      solution_string: undefined
+      board,
+      solution,
+      solution_string
     }));
   }
 
