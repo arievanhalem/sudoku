@@ -25,6 +25,10 @@ export class CellComponent implements OnInit {
   }
 
   setvalue(n: number) {
+    if(this._info.frozen) {
+      return
+    }
+
     if(this._info.value === n) {
       this.clearValue.emit(n)
     } else {
@@ -33,6 +37,10 @@ export class CellComponent implements OnInit {
   }
 
   setoption(n: number, e: Event) {
+    if(this._info.frozen) {
+      return
+    }
+
     e.preventDefault()
     if(this._options[n]) {
       this.clearOption.emit(n)

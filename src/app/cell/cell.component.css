@@ -8,6 +8,14 @@
   height: 60px;
 }
 
+.cell.frozen {
+  background-color: lightgray;
+}
+
+.cell.frozen .value {
+  cursor: default !important;
+}
+
 .value {
   position: absolute;
   width: 60px;

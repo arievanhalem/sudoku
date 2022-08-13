@@ -1,4 +1,4 @@
-<div *ngIf="_info" class="cell">
+<div *ngIf="_info" class="cell" [ngClass]="{'frozen': _info.frozen}">
   <div class="value" (click)="setvalue(_info.value)" *ngIf="_info.value">{{_info.value}}</div>
   <div class="options" *ngIf="!_info.value">
     <div class="row">

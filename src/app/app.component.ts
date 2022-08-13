@@ -7,7 +7,9 @@ type viewState = {
   board: board,
   size: number,
   blocksize: number,
-  displayBoard: cell[][]
+  displayBoard: cell[][],
+  solution_string: string,
+  solution: cell[][]
 }
 
 type updateAction = (vm: viewState) => Partial<viewState>
@@ -26,13 +28,15 @@ export class AppComponent implements OnInit, OnDestroy {
   constructor() {
     this.vm$ = this.updateVm.pipe(
       scan((state, action) => {
-        const nwState = {...state, ...action(state)}
-        return {...nwState, displayBoard: sudoku.getDisplayBoard(nwState.board) }
+        const nwState = { ...state, ...action(state) }
+        return { ...nwState, displayBoard: sudoku.getDisplayBoard(nwState.board) }
       }, {
         board: undefined,
         size: SIZE,
         blocksize: BLOCKSIZE,
-        displayBoard: undefined
+        displayBoard: undefined,
+        solution_string: undefined,
+        solution: undefined
       }),
       tap(console.log)
     )
@@ -72,5 +76,70 @@ export class AppComponent implements OnInit, OnDestroy {
 
   clearOption(r: number, c: number, n: number) {
     this.updateVm.next((s: viewState) => ({ board: sudoku.clearOption(s.board, r, c, n) }))
+  }
+
+  empty() {
+    this.updateVm.next((_: viewState) => ({ 
+      board: sudoku.getEmptyBoard(),
+      solution: undefined,
+      solution_string: undefined
+    }));
+  }
+
+  solve() {
+    this.updateVm.next((s: viewState) => {
+      var solution: string
+      if (!s.solution_string) {
+        const solutions = sudoku.solve(s.board)
+        if (solutions.length > 1) {
+          console.log('Meer dan 1 oplossing')
+          console.log(solutions)
+          return {}
+        } else if (solutions.length === 0) {
+          console.log('Geen oplossing')
+          return {}
+        }
+        solution = solutions[0]
+      } else {
+        solution = s.solution_string
+      }
+
+      const nwBoard = sudoku.deserialize(solution)
+      nwBoard.cells = nwBoard.cells.map((c, i) => ({ ...c, frozen: s.board.cells[i].frozen }))
+      return {
+        board: nwBoard,
+        solution: sudoku.getDisplayBoard(sudoku.deserialize(solution))
+      }
+
+    })
+  }
+
+  check() {
+    this.updateVm.next((s: viewState) => {
+      const solutions = sudoku.solve(s.board)
+      if (solutions.length > 1) {
+        console.log('Meer dan 1 oplossing')
+        console.log(solutions)
+        return {}
+      } else if (solutions.length === 0) {
+        console.log('Geen oplossing')
+        return {}
+      }
+      console.log('Geldige puzzel')
+      return {
+        board: sudoku.freeze(s.board),
+        solution: sudoku.getDisplayBoard(sudoku.deserialize(solutions[0])),
+        solution_string: solutions[0]
+      }
+    })
+  }
+
+  getString(b: board) {
+    console.log(sudoku.serialize(b))
+  }
+
+  setString() {
+    const s = prompt('Type de string voor het bord')
+    this.updateVm.next((_: viewState) => ({ board: sudoku.deserialize(s) }))
   }
 }
