@@ -16,6 +16,9 @@
   <button (click)="getString(vm.board)">Text opvragen</button>
   <button (click)="empty()">Leeg maken</button>
   <button (click)="check()">Controleer invoer</button>
+  <select [(ngModel)]="level">
+    <option *ngFor="let l of levelOptions" [ngValue]="l.value">{{l.name}}</option>
+  </select>
   <button (click)="generate()">Genereren</button>
   <button (click)="alloptions()">Alle potlood hints</button>
   <button (click)="solve()">Oplossen</button>

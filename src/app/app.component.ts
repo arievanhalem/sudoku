@@ -24,6 +24,15 @@ export class AppComponent implements OnInit, OnDestroy {
   public vm: viewState
   public updateVm = new Subject<updateAction>()
   public subscription = new Subscription()
+  public level = 35
+  public levelOptions = [
+    { name: "Makkie", value: 62 },
+    { name: "Leuk", value: 53 },
+    { name: "Te doen", value: 44 },
+    { name: "Wordt moeilijk", value: 35 },
+    { name: "Best lastig", value: 26 },
+    { name: "Onmenselijk", value: 17 }
+  ];
 
   constructor() {
     this.vm$ = this.updateVm.pipe(
@@ -79,7 +88,7 @@ export class AppComponent implements OnInit, OnDestroy {
   }
 
   empty() {
-    this.updateVm.next((_: viewState) => ({ 
+    this.updateVm.next((_: viewState) => ({
       board: sudoku.getEmptyBoard(),
       solution: undefined,
       solution_string: undefined
@@ -143,11 +152,11 @@ export class AppComponent implements OnInit, OnDestroy {
   }
 
   generate() {
-    var board = sudoku.generate(50)
+    var board = sudoku.generate(81 - this.level)
     const solutions = sudoku.solve(board)
     var solution: cell[][] = undefined
     var solution_string: string = undefined
-    if(solutions.length === 0) {
+    if (solutions.length === 0) {
       board = sudoku.getEmptyBoard()
     } else {
       solution_string = solutions[0]
@@ -155,7 +164,7 @@ export class AppComponent implements OnInit, OnDestroy {
       board = sudoku.freeze(board)
     }
 
-    this.updateVm.next((_: viewState) => ({ 
+    this.updateVm.next((_: viewState) => ({
       board,
       solution,
       solution_string

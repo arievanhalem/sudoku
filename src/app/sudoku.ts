@@ -2,14 +2,6 @@
 export const BLOCKSIZE = 3
 export const SIZE = BLOCKSIZE * BLOCKSIZE
 export const BOARDSIZE = SIZE * SIZE
-export const DIFFICULTY = {
-  "easy":         62,
-  "medium":       53,
-  "hard":         44,
-  "very-hard":    35,
-  "insane":       26,
-  "inhuman":      17,
-};
 
 export type cell = {
   value: number;
