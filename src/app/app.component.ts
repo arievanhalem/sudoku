@@ -124,7 +124,7 @@ export class AppComponent implements OnInit, OnDestroy {
 
   check() {
     this.updateVm.next((s: viewState) => {
-      const solutions = sudoku.solve(s.board)
+      const solutions = sudoku.solve(s.board, 2)
       if (solutions.length > 1) {
         console.log('Meer dan 1 oplossing')
         console.log(solutions)

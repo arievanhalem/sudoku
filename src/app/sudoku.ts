@@ -57,7 +57,7 @@ const stringify = (b: number[]) => {
   return b.map(c => c ? c.toString() : '_').join('')
 }
 
-const solve = (b: number[]): string[] => {
+const solve = (b: number[], K: number): string[] => {
   if (b.length !== BOARDSIZE) {
     return [] as string[]
   }
@@ -68,10 +68,10 @@ const solve = (b: number[]): string[] => {
   }
 
   return range(SIZE).reduce((ret, n) => {
-    if ((ret.length <= 20) && isValidOnIndex(b, idx, n + 1)) {
+    if ((ret.length < K) && isValidOnIndex(b, idx, n + 1)) {
       const nwB = [].concat(b)
       nwB[idx] = n + 1
-      return ret.concat(solve(nwB))
+      return ret.concat(solve(nwB, K))
     } else {
       return ret
     }
@@ -150,7 +150,7 @@ export const sudoku = {
     return { cells: b.cells.map((oldCell, idx) => idx === i ? nwCell : oldCell) }
   },
 
-  solve: (b: board): string[] => solve(b.cells.map(c => c.value)),
+  solve: (b: board, maxoplossingen: number = 1): string[] => solve(b.cells.map(c => c.value), maxoplossingen),
 
   freeze: (b: board) => ({
     cells: [].concat(b.cells)
@@ -175,7 +175,7 @@ export const sudoku = {
       })
     })
 
-    const solutions = solve(board.cells.map(c => c.value))
+    const solutions = solve(board.cells.map(c => c.value), 10)
     const solution =  getRandomElement(solutions)
     var result = solution.split('').map(c => c === '_' ? undefined : parseInt(c))
 
@@ -187,7 +187,7 @@ export const sudoku = {
         const idx = getRandomElement(result.map((v,i) => v ? i : -1).filter(i => i !== -1))
         const optie = [].concat(result)
         optie[idx] = undefined
-        numSol = solve(optie).length
+        numSol = solve(optie, 2).length
         if(numSol === 1) {
           result = optie
         }
