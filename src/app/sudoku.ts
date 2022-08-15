@@ -104,8 +104,7 @@ const generateFullBoard = () => {
       })
     })
 
-    const solutions = solve(board.cells.map(c => c.value), 1, true)
-    return solutions[0]
+    return solve(board.cells.map(c => c.value), 1, true)[0]
 }
 
 const getEmptyBoard = () => ({
