@@ -191,13 +191,21 @@ export class AppComponent implements OnInit, OnDestroy {
   }
 
   generate() {
+    const _timestamp = new Date()
+    this.updateVm.next((_: viewState) => ({
+      board: sudoku.getEmptyBoard(),
+      create_message: `Er wordt een puzzel gemaakt. Doel is ${81 - this.level} lege vakjes.`
+    }))
     const [board, solution] = sudoku.generate(81 - this.level)
     const solution_cells = sudoku.getDisplayBoard(sudoku.deserialize(solution))
 
     this.updateVm.next((_: viewState) => ({
       board,
       solution: solution_cells,
-      solution_string: solution
+      solution_string: solution,
+      create_message: `Er is een puzzle gevonden met. Met ${board.cells.filter(c => !c.value).length} 
+        lege vakjes van de ${81 - this.level} gevraagde. 
+        Tijdsduur ${new Date((new Date()).getTime() - _timestamp.getTime()).toISOString().replace('1970-01-01T','')}`
     }));
   }
 

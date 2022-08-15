@@ -58,17 +58,12 @@ const stringify = (b: number[]) => {
   return b.map(c => c ? c.toString() : '_').join('')
 }
 
-const solve = (b: number[], K: number = 1, randomize: boolean = false) : string[] => {
+const solve = (b: number[], K: number = 1, randomize: boolean = false): string[] => {
   if (b.length !== BOARDSIZE) {
     return [] as string[]
   }
 
-  let idx = -1
-  if(randomize) {
-    idx = (getRandomElement(b.map((v, i) => ({v, i})).filter(c => !c.v)) || {i: -1}).i
-  } else {
-    idx = b.findIndex(i => !i)
-  }
+  const idx = b.findIndex(i => !i)
 
   if (idx === -1) {
     return [stringify(b)]
@@ -79,32 +74,11 @@ const solve = (b: number[], K: number = 1, randomize: boolean = false) : string[
     if ((ret.length < K) && isValidOnIndex(b, idx, n + 1)) {
       const nwB = [].concat(b)
       nwB[idx] = n + 1
-      return ret.concat(solve(nwB, K))
+      return ret.concat(solve(nwB, K, randomize))
     } else {
       return ret
     }
   }, [])
-}
-
-const generateFullBoard = () => {
-  const numbers = range(SIZE)
-    const board = getEmptyBoard()
-    const b1 = shuffle(numbers)
-    const b2 = shuffle(numbers)
-    const b3 = shuffle(numbers)
-    range(BLOCKSIZE).forEach(i => {
-      range(BLOCKSIZE).forEach(j => {
-        const k = i * BLOCKSIZE + j
-        const ix1 = getCellIndex(i, j)
-        const ix2 = getCellIndex(i + BLOCKSIZE, j + BLOCKSIZE)
-        const ix3 = getCellIndex(i + BLOCKSIZE * 2, j + BLOCKSIZE * 2)
-        board.cells[ix1].value = b1[k] + 1
-        board.cells[ix2].value = b2[k] + 1
-        board.cells[ix3].value = b3[k] + 1
-      })
-    })
-
-    return solve(board.cells.map(c => c.value), 1, true)[0]
 }
 
 const getEmptyBoard = () => ({
@@ -188,35 +162,55 @@ export const sudoku = {
   }),
 
   generate: (K: number): [board, string] => {
-    var result = generateFullBoard().split('').map(c => c === '_' ? undefined : parseInt(c))
-    var solution = result
+    console.log(`${new Date().toISOString()} Start genereren`)
+    // initiele oplossing (random solution)
+    const result = solve(getEmptyBoard().cells.map(c => c.value), 1, true)[0].split('').map(c => c === '_' ? undefined : parseInt(c))
+    const solution = [].concat(result)
+    console.log(`${new Date().toISOString()} Grid gevonden: ${stringify(result)}`)
 
-    var count = K
-    while (count > 0) {
-      var numSol = 0
-      var maxTries = 10
-      while (numSol !== 1) {
-        const idx = getRandomElement(result.map((v, i) => v ? i : -1).filter(i => i !== -1))
-        const optie = [].concat(result)
-        optie[idx] = undefined
-        numSol = solve(optie, 2).length
-        if (numSol === 1) {
-          result = optie
+    // bepaal de volgorde van de indxen en maak de eerste cell leeg
+    let idxs = shuffle(range(81))
+    result[idxs[0]] = undefined
+    idxs = idxs.slice(1)
+
+    let count = K - 1
+    while (count > 0 && idxs.length > 0) {
+      let numSol = 0
+      const idx = idxs[0] 
+      idxs = idxs.slice(1)
+      const currentNumber = result[idx]
+      result[idx] = undefined
+      numSol = solve(result, 1).length
+      if (numSol === 0) {
+        // er is geen oplossing voor dit grid
+        result[idx] = currentNumber
+        console.log(`${new Date().toISOString()} Zoekstap (geen oplossing): ${idxs.length}/81 ${K-count}/${K}`)
+      } else {
+        // heeft een van de andere nummers 1 oplossing, dan zijn er meerdere oplossingen
+        numSol = 0
+        let numbers = range(SIZE).map(n => n + 1).filter(n => n !== currentNumber)
+        while (numSol === 0 && numbers.length > 0) {
+          const testNumber = numbers[0]
+          numbers = numbers.slice(1)
+          if (isValidOnIndex(result, idx, testNumber)) {
+            const testOptie = [].concat(result)
+            testOptie[idx] = testNumber
+            numSol = solve(testOptie, 1).length
+            console.log(`${new Date().toISOString()} Zoekstap index ${idx}, nummer ${testNumber}, oplossingen ${numSol}`)
+          }
         }
-        maxTries--
-        if (maxTries < 1) {
-          return [{
-            cells: result.map(c => ({
-              value: c,
-              options: [],
-              frozen: c ? true : false
-            }))
-          }, solution.join('')]
+
+        if (numSol !== 0) {
+          result[idx] = currentNumber
+          console.log(`${new Date().toISOString()} Zoekstap (meerdere oplossingen): ${idxs.length}/81 ${K-count}/${K}`)
+        } else {
+          count--
+          console.log(`${new Date().toISOString()} Zoekstap (oplossing): ${idxs.length}/81 ${K-count}/${K}`)
         }
       }
-      count--
     }
 
+    console.log(`${new Date().toISOString()} Puzzel gevonden: ${result.filter(v => !v).length}/${K}`)
     return [{
       cells: result.map(c => ({
         value: c,
