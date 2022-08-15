@@ -9,7 +9,10 @@ type viewState = {
   blocksize: number,
   displayBoard: cell[][],
   solution_string: string,
-  solution: cell[][]
+  solution: cell[][],
+  check_solution: boolean,
+  create_message: string,
+  solve_message: string
 }
 
 type updateAction = (vm: viewState) => Partial<viewState>
@@ -37,7 +40,8 @@ export class AppComponent implements OnInit, OnDestroy {
   constructor() {
     this.vm$ = this.updateVm.pipe(
       scan((state, action) => {
-        const nwState = { ...state, ...action(state) }
+        const resets = {check_solution: false, create_message: undefined, solve_message: undefined}
+        const nwState = { ...state, ...resets , ...action(state) }
         return { ...nwState, displayBoard: sudoku.getDisplayBoard(nwState.board) }
       }, {
         board: undefined,
@@ -45,7 +49,10 @@ export class AppComponent implements OnInit, OnDestroy {
         blocksize: BLOCKSIZE,
         displayBoard: undefined,
         solution_string: undefined,
-        solution: undefined
+        solution: undefined,
+        check_solution: false,
+        create_message: undefined, 
+        solve_message: undefined
       }),
       tap(console.log)
     )
@@ -97,28 +104,42 @@ export class AppComponent implements OnInit, OnDestroy {
 
   solve() {
     this.updateVm.next((s: viewState) => {
-      var solution: string
       if (!s.solution_string) {
-        const solutions = sudoku.solve(s.board)
-        if (solutions.length > 1) {
-          console.log('Meer dan 1 oplossing')
-          console.log(solutions)
-        } else if (solutions.length === 0) {
-          console.log('Geen oplossing')
-          return {}
-        }
-        solution = solutions[0]
-      } else {
-        solution = s.solution_string
+        return {}
       }
 
-      const nwBoard = sudoku.deserialize(solution)
+      const nwBoard = sudoku.deserialize(s.solution_string)
       nwBoard.cells = nwBoard.cells.map((c, i) => ({ ...c, frozen: s.board.cells[i].frozen }))
       return {
         board: nwBoard,
-        solution: sudoku.getDisplayBoard(sudoku.deserialize(solution))
+      }
+    })
+  }
+
+  hint() {
+    this.updateVm.next((s: viewState) => {
+      if (!s.solution_string) {
+        return {
+          solve_message: 'Geen oplossing voor deze sudoku'
+        }
       }
 
+      const nwBoard = sudoku.deserialize(s.solution_string)
+      const emptyIdxs = s.board.cells.map((v, i) => ({v: v.value, i})).filter(c => !c.v).map(({i}) => i)
+      if(emptyIdxs.length > 0) {
+        const emptyIdx = emptyIdxs[Math.floor(Math.random() * emptyIdxs.length)]
+        const hint = nwBoard.cells[emptyIdx].value
+        var board = {cells: [].concat(s.board.cells)}
+        board.cells[emptyIdx].value = hint
+
+        return {
+          board
+        }
+      } else {
+        return {
+          solve_message: 'Geen hint gevonden'
+        }
+      }
     })
   }
 
@@ -126,14 +147,14 @@ export class AppComponent implements OnInit, OnDestroy {
     this.updateVm.next((s: viewState) => {
       const solutions = sudoku.solve(s.board, 2)
       if (solutions.length > 1) {
-        console.log('Meer dan 1 oplossing')
-        console.log(solutions)
-        return {}
+        return {
+          create_message: 'Meer dan 1 oplossing gevonden'
+        }
       } else if (solutions.length === 0) {
-        console.log('Geen oplossing')
-        return {}
+        return {
+          create_message: 'Geen dan 1 oplossing gevonden'
+        }
       }
-      console.log('Geldige puzzel')
       return {
         board: sudoku.freeze(s.board),
         solution: sudoku.getDisplayBoard(sudoku.deserialize(solutions[0])),
@@ -142,8 +163,26 @@ export class AppComponent implements OnInit, OnDestroy {
     })
   }
 
-  getString(b: board) {
-    console.log(sudoku.serialize(b))
+  checkSolution() {
+    this.updateVm.next((s: viewState) => {
+      if (!s.solution_string) {
+        return {
+          solve_message: 'Geen oplossing voor deze sudoku'
+        }
+      }
+
+      return {
+        check_solution: true
+      }
+    })
+  }
+
+  getString() {
+    this.updateVm.next((s: viewState) => {
+      return {
+        create_message: sudoku.serialize(s.board)
+      }
+    })
   }
 
   setString() {
@@ -152,22 +191,13 @@ export class AppComponent implements OnInit, OnDestroy {
   }
 
   generate() {
-    var board = sudoku.generate(81 - this.level)
-    const solutions = sudoku.solve(board)
-    var solution: cell[][] = undefined
-    var solution_string: string = undefined
-    if (solutions.length === 0) {
-      board = sudoku.getEmptyBoard()
-    } else {
-      solution_string = solutions[0]
-      solution = sudoku.getDisplayBoard(sudoku.deserialize(solutions[0]))
-      board = sudoku.freeze(board)
-    }
+    const [board, solution] = sudoku.generate(81 - this.level)
+    const solution_cells = sudoku.getDisplayBoard(sudoku.deserialize(solution))
 
     this.updateVm.next((_: viewState) => ({
       board,
-      solution,
-      solution_string
+      solution: solution_cells,
+      solution_string: solution
     }));
   }
 

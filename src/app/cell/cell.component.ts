@@ -9,9 +9,22 @@ import { cell } from '../sudoku';
 export class CellComponent implements OnInit {
   public _info: cell
   public _options = {}
+  public _check_solutino = false
+  public _solution: number = undefined
+  public _is_wrong = false
+
   @Input() set info(value:cell) {
     this._info = value;
     this._options = this._info.options.reduce((a, v) => ({ ...a, [v]: v}), {}) 
+  }
+  @Input() set check_solution(value: boolean) {
+    this._check_solutino = true
+    this._is_wrong = this._check_solutino && this._info.value && this._solution && (this._info.value !== this._solution) ? true : false
+  }
+
+  @Input() set solution (value: number) {
+    this._solution = value
+    this._is_wrong = this._check_solutino && this._info.value && this._solution && (this._info.value !== this._solution) ? true : false
   }
 
   @Output() setValue = new EventEmitter<number>();
