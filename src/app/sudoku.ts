@@ -105,7 +105,6 @@ const generateFullBoard = () => {
     })
 
     const solutions = solve(board.cells.map(c => c.value), 1, true)
-    console.log(solutions)
     return solutions[0]
 }
 
