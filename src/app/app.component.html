@@ -1,36 +1,38 @@
 <h1>Sudoku</h1>
 <hr />
 
-<div *ngIf="vm" class="grid">
-  <div *ngFor="let row of [].constructor(vm.size);let r = index;" class="row">
-    <div *ngFor="let col of [].constructor(vm.size);let c = index;" class="cell"
-      [ngClass]="{'block-left': (c % vm.blocksize) === 0, 'block-top': (r % vm.blocksize) === 0,'block-right': c === vm.size-1, 'block-bottom': r === vm.size-1}">
-      <app-cell [info]="vm.displayBoard[r][c]" [solution]="vm.check_solution ? vm.solution[r][c].value : undefined" [check_solution]="vm.check_solution"
-        (setValue)="setValue(r, c, $event)"
-        (clearValue)="clearValue(r, c, $event)" (setOption)="setOption(r, c, $event)"
-        (clearOption)="clearOption(r, c, $event)"></app-cell>
+<div *ngIf="vm$ | async as vm">
+  <div class="grid">
+    <div *ngFor="let row of [].constructor(vm.size);let r = index;" class="row">
+      <div *ngFor="let col of [].constructor(vm.size);let c = index;" class="cell"
+        [ngClass]="{'block-left': (c % vm.blocksize) === 0, 'block-top': (r % vm.blocksize) === 0,'block-right': c === vm.size-1, 'block-bottom': r === vm.size-1}">
+        <app-cell [info]="vm.displayBoard[r][c]" [solution]="vm.check_solution ? vm.solution[r][c].value : undefined"
+          [check_solution]="vm.check_solution" (setValue)="setValue(r, c, $event)"
+          (clearValue)="clearValue(r, c, $event)" (setOption)="setOption(r, c, $event)"
+          (clearOption)="clearOption(r, c, $event)"></app-cell>
+      </div>
     </div>
   </div>
-</div>
 
-<div class="create_message" *ngIf="vm.create_message">{{vm.create_message}}</div>
-<div class="solve_message" *ngIf="vm.solve_message">{{vm.solve_message}}</div>
+  <div class="create_message" *ngIf="vm.create_message">{{vm.create_message}}</div>
+  <div class="solve_message" *ngIf="vm.solve_message">{{vm.solve_message}}</div>
 
-<div class="buttons" >
-  <button (click)="empty()">Leeg maken</button>
-  <button (click)="setString()">Tekst invoeren</button>
-  <button (click)="getString()">Text opvragen</button>
-</div>
-<div *ngIf="!vm.solution">
-  <button (click)="check()">Controleer invoer</button>
-  <select [(ngModel)]="level">
-    <option *ngFor="let l of levelOptions" [ngValue]="l.value">{{l.name}}</option>
-  </select>
-  <button (click)="generate()">Genereren</button>
-</div>
-<div *ngIf="vm.solution"> 
-  <button (click)="alloptions()">Alle potlood hints</button>
-  <button (click)="hint()">Hint</button>
-  <button (click)="checkSolution()">Controleer oplossing</button>
-  <button (click)="solve()">Oplossen</button>
+  <div class="buttons">
+    <button (click)="empty()">Leeg maken</button>
+    <button (click)="setString()">Tekst invoeren</button>
+    <button (click)="getString()">Text opvragen</button>
+  </div>
+  <div *ngIf="!vm.solution">
+    <button (click)="check()">Controleer invoer</button>
+    <select [(ngModel)]="level">
+      <option *ngFor="let l of levelOptions" [ngValue]="l.value">{{l.name}}</option>
+    </select>
+    <button (click)="generate()">Genereren</button>
+  </div>
+  <div *ngIf="vm.solution">
+    <button (click)="alloptions()">Alle potlood hints</button>
+    <button (click)="hint()">Hint</button>
+    <button (click)="checkSolution()">Controleer oplossing</button>
+    <button (click)="solve()">Oplossen</button>
+  </div>
 </div>
